@@ -29,7 +29,7 @@ if (isset($_POST['login'])) {
   <style>
     body {
       font-family: 'Segoe UI', Arial, sans-serif;
-      background-color: #f3f5f7;
+      background-color: #f4f4f4;
       display: flex;
       justify-content: center;
       align-items: center;
