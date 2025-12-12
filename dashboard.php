@@ -10,17 +10,32 @@ if (!isset($_SESSION['username'])) {
 // cek apakah ada pengirimian data
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-  $kode_barang   = $_POST['kode_barang']   ?? '';
-  $nama_barang   = $_POST['nama_barang']   ?? '';
-  $harga_barang  = (int)($_POST['harga_barang']   ?? 0);
-  $jumlah = (int)($_POST['jumlah']  ?? 0);
+  if (isset($_POST["tambah_barang"])) {
+    $kode_barang   = $_POST['kode_barang']   ?? '';
+    $nama_barang   = $_POST['nama_barang']   ?? '';
+    $harga_barang  = (int)($_POST['harga_barang']   ?? 0);
+    $jumlah = (int)($_POST['jumlah']  ?? 0);
 
-  $_SESSION['barang'][] = [
-    'kode_barang' => $kode_barang,
-    'nama_barang' => $nama_barang,
-    'harga_barang' => $harga_barang,
-    'jumlah' => $jumlah
-  ];
+    $_SESSION['barang'][] = [
+      'kode_barang' => $kode_barang,
+      'nama_barang' => $nama_barang,
+      'harga_barang' => $harga_barang,
+      'jumlah' => $jumlah
+    ];
+  }
+
+  if (isset($_POST['hapus'])) {
+    $kode_hapus = $_POST['hapus'];
+    // Cari dan hapus item dari keranjang berdasarkan kode_barang
+    foreach ($_SESSION['barang'] as $index => $item) {
+      if ($item['kode_barang'] === $kode_hapus) {
+        unset($_SESSION['barang'][$index]);
+        // Reindex array setelah penghapusan
+        $_SESSION['barang'] = array_values($_SESSION['barang']);
+        break;
+      }
+    }
+  }
 }
 
 $barang = $_SESSION['barang'] ?? null;
@@ -151,6 +166,12 @@ $grandtotal = 0;
       background-color: #f0f0f0;
     }
 
+    button[name="hapus"] {
+      background-color: #3578e5;
+      color: white;
+      border: 1px solid #ccc;
+    }
+
     main {
       background-color: white;
       padding: 20px;
@@ -259,7 +280,7 @@ $grandtotal = 0;
       <label for="jumlah">Jumlah</label>
       <input type="number" name="jumlah" id="jumlah" placeholder="Masukan Jumlah" required>
       <div class="container">
-        <input type="submit" value="Tambahkan">
+        <input type="submit" value="Tambahkan" name="tambah_barang">
         <input type="reset" value="Batal">
       </div>
     </form>
@@ -274,6 +295,7 @@ $grandtotal = 0;
           <th>Harga Barang (Rp)</th>
           <th>Jumlah</th>
           <th>Total (Rp)</th>
+          <th>Aksi</th>
         </tr>
         <?php
         foreach ($barang as $item) {
@@ -308,6 +330,7 @@ $grandtotal = 0;
           echo "<td style='text-align:right;'>" . number_format($harga_barang,  0, ',', '.') . "</td>";
           echo "<td style='text-align:center;'>" . $jumlah . "</td>";
           echo "<td style='text-align:right;'>" . number_format($total_harga,  0, ',', '.') . "</td>";
+          echo "<td style='text-align:right;'><form method= 'post'><button type= 'submit' name='hapus' value=$kode_barang>Hapus</button></form></td>";
           echo "</tr>";
         }
         ?>
