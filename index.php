@@ -1,21 +1,28 @@
 <?php
 session_start();
+
+include "koneksi.php";
+
 $error = "";
 
 if (isset($_POST['login'])) {
   $username = $_POST['username'];
   $password = $_POST['password'];
 
-  // Data login statis
-  $user_valid = "admin";
-  $pass_valid = "1234";
+  $results = mysqli_query($koneksi, "SELECT * FROM tbl_users WHERE username = '$username'");
 
-  if ($username == $user_valid && $password == $pass_valid) {
-    $_SESSION['username'] = $username;
-    header("Location: dashboard.php");
-    exit();
+  // Login sederhana (username: admin, password: 1234)
+  if ($row = mysqli_fetch_assoc($results)) {
+    if ($password == $row['password']) {
+      $_SESSION['username'] = $username;
+      $_SESSION['role'] = $row['role'];
+      header("Location: dashboard.php");
+      exit;
+    } else {
+      $error = "Password salah!";
+    }
   } else {
-    $error = "Username atau password salah!";
+    $error = "Username tidak ditemukan!";
   }
 }
 ?>
