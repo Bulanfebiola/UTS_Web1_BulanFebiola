@@ -1,17 +1,25 @@
 <?php
 session_start();
 
+include 'koneksi.php';
+
+$result = mysqli_query($koneksi, "SELECT * FROM tbl_barang");
+$dataBarang = mysqli_fetch_all($result, MYSQLI_ASSOC);
+
 // Cek apakah user sudah login
 if (!isset($_SESSION['username'])) {
   header("Location: index.php");
   exit;
 }
-
+//Simpan array barang ke session
+if (!isset($_SESSION['barang'])) {
+  $_SESSION['barang'] = [];
+}
 // cek apakah ada pengirimian data
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   if (isset($_POST["tambah_barang"])) {
-    $kode_barang   = $_POST['kode_barang']   ?? '';
+    $kode_barang   = $dataBarang [$_POST['kode_barang']]['kode_barang']   ?? '';
     $nama_barang   = $_POST['nama_barang']   ?? '';
     $harga_barang  = (int)($_POST['harga_barang']   ?? 0);
     $jumlah = (int)($_POST['jumlah']  ?? 0);
@@ -265,13 +273,13 @@ $grandtotal = 0;
   <main>
     <form action="dashboard.php" method="POST">
       <label for="kode_barang">Kode Barang</label>
-      <select name="kode_barang" id="kode_barang" required onchange="isiDataBarang()">
-        <option value="">Pilih Kode Barang</option>
-        <option value="BRG001">BRG001 - Sabun Mandi</option>
-        <option value="BRG002">BRG002 - Sikat Gigi</option>
-        <option value="BRG003">BRG003 - Pasta Gigi</option>
-        <option value="BRG004">BRG004 - Shampoo</option>
-        <option value="BRG005">BRG005 - Handuk</option>
+      <select name="kode_barang" id="kode_barang" required>
+        <option value="" disabled selected>Pilih Kode Barang</option>
+        <?php foreach ($dataBarang as $index => $item) : ?>
+          <option value="<?php echo $index; ?>">
+            <?php echo $item["kode_barang"] . " - " . $item["nama_barang"] ?>
+          </option>
+        <?php endforeach; ?>
       </select>
       <label for="nama_barang">Nama Barang</label>
       <input type="text" name="nama_barang" id="nama_barang" placeholder="Masukan Nama Barang" required>
@@ -362,40 +370,19 @@ $grandtotal = 0;
       window.location.href = "index.php";
     }
     //munculkan nama baranng, harga barang
-    function isiDataBarang() {
+    const dataBarang = <?php echo json_encode($dataBarang); ?>;
+    const nama_barang = document.getElementById("nama_barang");
+    const harga = document.getElementById("harga_barang");
+    kode_barang.addEventListener('change', function() {
       const kode = document.getElementById("kode_barang").value;
-
-      const dataBarang = {
-        "BRG001": {
-          nama: "Sabun Mandi",
-          harga: 15000
-        },
-        "BRG002": {
-          nama: "Sikat Gigi",
-          harga: 8000
-        },
-        "BRG003": {
-          nama: "Pasta Gigi",
-          harga: 12000
-        },
-        "BRG004": {
-          nama: "Shampoo",
-          harga: 20000
-        },
-        "BRG005": {
-          nama: "Handuk",
-          harga: 30000
-        }
-      };
-
-      if (dataBarang[kode]) {
-        document.getElementById("nama_barang").value = dataBarang[kode].nama;
-        document.getElementById("harga_barang").value = dataBarang[kode].harga;
+      if (dataBarang[this.value]) {
+        nama_barang.value = dataBarang[kode].nama_barang;
+        harga.value = dataBarang[kode].harga;
       } else {
-        document.getElementById("nama_barang").value = "";
-        document.getElementById("harga_barang").value = "";
+        nama_barang.value = '';
+        harga.value = '';
       }
-    }
+    });
   </script>
 </body>
 
